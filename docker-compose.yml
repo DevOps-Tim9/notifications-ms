@@ -1,0 +1,58 @@
+version: "3.7"
+
+services:
+  database-notifications:
+    container_name: postgres_container
+    image: postgres:13
+    restart: always
+    networks:
+      - notifications-ms
+      - network-for-ms
+    environment: 
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    ports:
+      - "5434:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+      
+  notifications-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${TARGET:-run}
+    restart: on-failure
+    networks:
+      - notifications-ms
+      - network-for-ms
+    environment: 
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_DOMAIN: ${DATABASE_DOMAIN}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA}
+      DATABASE_PORT: ${DATABASE_PORT}
+      SERVER_PORT: ${SERVER_PORT}
+      AMQP_SERVER_URL: ${AMQP_SERVER_URL}
+    ports:
+      - "9095:9095"
+    depends_on:
+      database-notifications:
+        condition: service_healthy
+
+volumes:
+  data:
+    name: notifications-ms-database
+
+networks:
+  notifications-ms:
+    name: notifications-ms
+    driver: bridge
+  network-for-ms:
+    name: network-for-ms
