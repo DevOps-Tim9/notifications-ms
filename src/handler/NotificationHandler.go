@@ -11,10 +11,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
 )
 
 type NotificationHandler struct {
 	Service *service.NotificationService
+	Logger  *logrus.Entry
 }
 
 func extractClaims(tokenStr string) (jwt.MapClaims, bool) {
@@ -42,6 +44,7 @@ func (handler *NotificationHandler) GetNotifications(ctx *gin.Context) {
 
 	claims, _ := extractClaims(ctx.Request.Header.Get("Authorization"))
 
+	handler.Logger.Info(fmt.Sprintf("Getting notifications for user %s", fmt.Sprint(claims["sub"])))
 	notifications := handler.Service.GetNotifications(fmt.Sprint(claims["sub"]))
 
 	ctx.JSON(http.StatusOK, notifications)
@@ -53,6 +56,7 @@ func (handler *NotificationHandler) DeleteNotifications(ctx *gin.Context) {
 
 	claims, _ := extractClaims(ctx.Request.Header.Get("Authorization"))
 
+	handler.Logger.Info(fmt.Sprintf("Deleting notifications for user %s", fmt.Sprint(claims["sub"])))
 	handler.Service.DeleteNotifications(fmt.Sprint(claims["sub"]))
 
 	ctx.JSON(http.StatusOK, nil)

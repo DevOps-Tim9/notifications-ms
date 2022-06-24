@@ -4,6 +4,7 @@ import (
 	"notifications-ms/src/dto"
 	"notifications-ms/src/model"
 	"notifications-ms/src/repository"
+	"notifications-ms/src/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,7 @@ func TestNotificationServiceUnitTestsSuite(t *testing.T) {
 
 func (suite *NotificationServiceUnitTestsSuite) SetupSuite() {
 	suite.notificationRepositoryMock = new(repository.NotificationRepositoryMock)
-	suite.service = NewNotificationService(suite.notificationRepositoryMock)
+	suite.service = NewNotificationService(suite.notificationRepositoryMock, utils.Logger())
 }
 
 func (suite *NotificationServiceUnitTestsSuite) TestNewNotificationService() {

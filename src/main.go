@@ -9,6 +9,7 @@ import (
 	"notifications-ms/src/rabbitmq"
 	"notifications-ms/src/repository"
 	"notifications-ms/src/service"
+	"notifications-ms/src/utils"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -70,11 +71,11 @@ func initNotificationRepo(database *gorm.DB) *repository.NotificationRepository 
 }
 
 func initNotificationService(notificationRepo *repository.NotificationRepository) *service.NotificationService {
-	return &service.NotificationService{NotificationRepo: notificationRepo}
+	return &service.NotificationService{NotificationRepo: notificationRepo, Logger: utils.Logger()}
 }
 
 func initNotificationHandler(service *service.NotificationService) *handler.NotificationHandler {
-	return &handler.NotificationHandler{Service: service}
+	return &handler.NotificationHandler{Service: service, Logger: utils.Logger()}
 }
 
 func handleNotificationFunc(handler *handler.NotificationHandler, router *gin.Engine) {
@@ -83,12 +84,18 @@ func handleNotificationFunc(handler *handler.NotificationHandler, router *gin.En
 }
 
 func main() {
+	logger := utils.Logger()
+
+	logger.Info("Connecting with DB")
+
 	database, _ := initDB()
 
 	port := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
 
+	logger.Info("Initializing Jaeger")
 	tracer, trCloser, err := InitJaeger()
 	if err != nil {
+		logger.Debug(err.Error())
 		fmt.Printf("error init jaeger %v", err)
 	} else {
 		defer trCloser.Close()
@@ -106,6 +113,7 @@ func main() {
 		NotificationService: notificationService,
 	}
 
+	logger.Info("Starting RabbitMQ")
 	channel, _ := rabbit.StartRabbitMQ()
 
 	defer channel.Close()
@@ -126,5 +134,6 @@ func main() {
 
 	handleNotificationFunc(notificationHandler, router)
 
+	logger.Info(fmt.Sprintf("Starting server on port %s", os.Getenv("SERVER_PORT")))
 	http.ListenAndServe(port, cors.AllowAll().Handler(router))
 }
