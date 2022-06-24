@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"notifications-ms/src/handler"
 	"notifications-ms/src/model"
@@ -13,14 +14,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/opentracing/opentracing-go"
 	"github.com/rs/cors"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 )
 
 var db *gorm.DB
 var err error
 
 func initDB() (*gorm.DB, error) {
-	fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 	host := os.Getenv("DATABASE_DOMAIN")
 	user := os.Getenv("DATABASE_USERNAME")
 	password := os.Getenv("DATABASE_PASSWORD")
@@ -45,6 +48,23 @@ func initDB() (*gorm.DB, error) {
 	return db, err
 }
 
+func InitJaeger() (opentracing.Tracer, io.Closer, error) {
+	cfg := config.Configuration{
+		ServiceName: "notifications-ms",
+		Sampler: &config.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans:           true,
+			LocalAgentHostPort: "jaeger:6831",
+		},
+	}
+
+	tracer, closer, err := cfg.NewTracer(config.Logger(jaeger.StdLogger))
+	return tracer, closer, err
+}
+
 func initNotificationRepo(database *gorm.DB) *repository.NotificationRepository {
 	return &repository.NotificationRepository{Database: database}
 }
@@ -66,6 +86,14 @@ func main() {
 	database, _ := initDB()
 
 	port := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
+
+	tracer, trCloser, err := InitJaeger()
+	if err != nil {
+		fmt.Printf("error init jaeger %v", err)
+	} else {
+		defer trCloser.Close()
+		opentracing.SetGlobalTracer(tracer)
+	}
 
 	notificationRepo := initNotificationRepo(database)
 	notificationService := initNotificationService(notificationRepo)

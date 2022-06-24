@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go"
 )
 
 type NotificationHandler struct {
@@ -36,6 +37,9 @@ func getId(idParam string) (int, error) {
 }
 
 func (handler *NotificationHandler) GetNotifications(ctx *gin.Context) {
+	span, _ := opentracing.StartSpanFromContext(ctx.Request.Context(), "GET /notifications")
+	defer span.Finish()
+
 	claims, _ := extractClaims(ctx.Request.Header.Get("Authorization"))
 
 	notifications := handler.Service.GetNotifications(fmt.Sprint(claims["sub"]))
@@ -44,6 +48,9 @@ func (handler *NotificationHandler) GetNotifications(ctx *gin.Context) {
 }
 
 func (handler *NotificationHandler) DeleteNotifications(ctx *gin.Context) {
+	span, _ := opentracing.StartSpanFromContext(ctx.Request.Context(), "DELETE /notifications")
+	defer span.Finish()
+
 	claims, _ := extractClaims(ctx.Request.Header.Get("Authorization"))
 
 	handler.Service.DeleteNotifications(fmt.Sprint(claims["sub"]))
