@@ -45,10 +45,26 @@ services:
     depends_on:
       database-notifications:
         condition: service_healthy
+    volumes:
+      - logs:/root/logs
+
+  promtail:
+    image: grafana/promtail:latest
+    networks:
+      - notifications-ms
+      - network-for-ms
+    volumes:
+      - "./promtail:/etc/promtail"
+      - "/var/log:/var/log"
+      - logs:/var/logs
+    command: -config.file=/etc/promtail/promtail.yml
+    restart: always
 
 volumes:
   data:
     name: notifications-ms-database
+  logs:
+    name: nottifications-logs
 
 networks:
   notifications-ms:

@@ -50,6 +50,7 @@ require (
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/cors v1.8.2
+	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.2
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
