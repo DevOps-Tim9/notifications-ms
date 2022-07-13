@@ -93,7 +93,7 @@ func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificatio
 
 	err := suite.service.AddNotification(&notificationDTO)
 
-	assert.NotEqual(suite.T(), nil, err)
+	assert.Equal(suite.T(), nil, err)
 }
 
 func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificationService_AddNotification_RequiredFieldMissing() {
@@ -109,7 +109,7 @@ func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificatio
 }
 
 func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificationService_DeleteNotifications_Pass() {
-	userId := "authId2"
+	userId := "auth0Id2"
 
 	suite.service.DeleteNotifications(userId)
 
@@ -126,7 +126,7 @@ func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificatio
 }
 
 func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificationService_GetNotifications_NotificationsExist() {
-	userId := "authId1"
+	userId := "auth0Id1"
 
 	notifications := suite.service.GetNotifications(userId)
 
