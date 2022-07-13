@@ -109,7 +109,7 @@ func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificatio
 }
 
 func (suite *NotificationServiceIntegrationTestSuite) TestIntegrationNotificationService_DeleteNotifications_Pass() {
-	userId := "auth0Id2"
+	userId := "auth0Id2|auth0"
 
 	suite.service.DeleteNotifications(userId)
 
