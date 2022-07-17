@@ -2,8 +2,11 @@ package rabbitmq
 
 import (
 	"encoding/json"
+	"fmt"
 	"notifications-ms/src/dto"
+	"notifications-ms/src/handler"
 	"notifications-ms/src/service"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -80,6 +83,7 @@ func (r RMQConsumer) HandleAddNotification(message []byte) {
 	json.Unmarshal([]byte(message), &notificationDto)
 
 	r.NotificationService.AddNotification(&notificationDto)
+	handler.AddSystemEvent(time.Now().Format("2006-01-02 15:04:05"), fmt.Sprintf("New notification added for user %s, type: %d", notificationDto.UserAuth0ID, notificationDto.NotificationType))
 }
 
 func (r RMQConsumer) Worker(messages <-chan amqp.Delivery) {
