@@ -41,7 +41,7 @@ services:
       notifications-database-test:
         condition: service_healthy
 
-    database-events-test:
+  database-events-test:
     image: postgres:13
     restart: always
     networks:
