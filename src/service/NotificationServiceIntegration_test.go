@@ -41,6 +41,8 @@ func (suite *NotificationServiceIntegrationTestSuite) SetupSuite() {
 
 	db.AutoMigrate(model.Notification{})
 
+	db.Where("1=1").Delete(model.Notification{})
+
 	notificationRepository := repository.NotificationRepository{Database: db}
 
 	suite.db = db
